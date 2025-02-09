@@ -1,5 +1,6 @@
 import os
 import asyncio
+import yt_dlp
 from urllib.parse import urlparse
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
