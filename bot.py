@@ -7,6 +7,7 @@ from youtube_dl import YoutubeDL
 from opencc import OpenCC
 from config import Config
 import wget
+from pyrogram.enums import ParseMode
 
 Jebot = Client(
    "YT Downloader",
