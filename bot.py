@@ -106,7 +106,7 @@ async def download_video(client, message):
     await message.reply_text("⏳ Processing the video, please wait...")
 
     try:
-        with yt_dlp.YoutubeDL({'format': 'bestvideo+bestaudio/best'}) as ydl:
+        with YoutubeDL({'format': 'bestvideo+bestaudio/best'}) as ydl:
             info_dict = ydl.extract_info(url, download=True)
             file_path = ydl.prepare_filename(info_dict)
         
