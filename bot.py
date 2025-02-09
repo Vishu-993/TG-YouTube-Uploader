@@ -42,7 +42,7 @@ Hit help button to find out more about how to use me</b>""",
             ]]
         ),        
         disable_web_page_preview=True,        
-        parse_mode="html"
+        parse_mode=ParseMode.HTML
     )
 
 
@@ -64,7 +64,7 @@ Just send a Youtube URL to download it in video or audio format!
             ]]
         ),        
         disable_web_page_preview=True,        
-        parse_mode="html"
+        parse_mode=ParseMode.HTML
     )
 
 
@@ -93,7 +93,7 @@ async def about(client, message):
             ]]
         ),        
         disable_web_page_preview=True,        
-        parse_mode="html"
+        parse_mode=ParseMode.HTML
     )
 
 
@@ -115,7 +115,7 @@ async def download_video(client, message):
             video=file_path,
             caption=caption,
             duration=int(info_dict['duration']),
-            parse_mode="html"
+            parse_mode=ParseMode.HTML
         )
         os.remove(file_path)
 
