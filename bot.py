@@ -23,60 +23,56 @@ YTDL_REGEX = (r"^((?:https?:)?\/\/)"
 s2tw = OpenCC('s2tw.json').convert
 
 
+
 @Jebot.on_message(filters.command("start"))
 async def start(client, message):
-   if message.chat.type == 'private':
-       await Jebot.send_message(
-               chat_id=message.chat.id,
-               text="""<b>Hello! This is a YouTube Uploader Bot
+    await client.send_message(
+        chat_id=message.chat.id,
+        text="""<b>Hello! This is a YouTube Uploader Bot
 
 I can download video or audio from Youtube. Made by @TheTeleRoid 🇮🇳
 
 Hit help button to find out more about how to use me</b>""",   
-                            reply_markup=InlineKeyboardMarkup(
-                                [[
-                                        InlineKeyboardButton(
-                                            "⭕ Channel ⭕", url="https://t.me/TeleRoidGroup"),
-                                        InlineKeyboardButton(
-                                            "🛑 Support 🛑", url="https://t.me/TeleRoid14")
-                                    ],[
-                                      InlineKeyboardButton(
-                                            "Source Code", url="https://github.com/P-Phreak/TG-YouTube-Uploader")
-                                    ]]
-                            ),        
-            disable_web_page_preview=True,        
-            parse_mode="html")
+        reply_markup=InlineKeyboardMarkup(
+            [[
+                InlineKeyboardButton("⭕ Channel ⭕", url="https://t.me/TeleRoidGroup"),
+                InlineKeyboardButton("🛑 Support 🛑", url="https://t.me/TeleRoid14")
+            ],[
+                InlineKeyboardButton("Source Code", url="https://github.com/P-Phreak/TG-YouTube-Uploader")
+            ]]
+        ),        
+        disable_web_page_preview=True,        
+        parse_mode="html"
+    )
+
 
 @Jebot.on_message(filters.command("help"))
 async def help(client, message):
-    if message.chat.type == 'private':   
-        await Jebot.send_message(
-               chat_id=message.chat.id,
-               text="""<b>YouTube Bot Help!
+    await client.send_message(
+        chat_id=message.chat.id,
+        text="""<b>YouTube Bot Help!
 
-Just send a Youtube url to download it in video or audio format!
+Just send a Youtube URL to download it in video or audio format!
 
 ~ @TeleRoidGroup</b>""",
         reply_markup=InlineKeyboardMarkup(
-                                [[
-                                        InlineKeyboardButton(
-                                            "⭕ Channel ⭕", url="https://t.me/TeleRoidGroup"),
-                                        InlineKeyboardButton(
-                                            "🛑 Support 🛑", url="https://t.me/TeleRoid14"),
-                                  ],[
-                                        InlineKeyboardButton(
-                                            "About Meh👤", url="https://t.me/TheTeleRoid")
-                                    ]]
-                            ),        
-            disable_web_page_preview=True,        
-            parse_mode="html")
+            [[
+                InlineKeyboardButton("⭕ Channel ⭕", url="https://t.me/TeleRoidGroup"),
+                InlineKeyboardButton("🛑 Support 🛑", url="https://t.me/TeleRoid14"),
+            ],[
+                InlineKeyboardButton("About Meh👤", url="https://t.me/TheTeleRoid")
+            ]]
+        ),        
+        disable_web_page_preview=True,        
+        parse_mode="html"
+    )
+
 
 @Jebot.on_message(filters.command("about"))
 async def about(client, message):
-    if message.chat.type == 'private':   
-        await Jebot.send_message(
-               chat_id=message.chat.id,
-               text="""<b>About TeleRoid YouTube Bot!</b>
+    await client.send_message(
+        chat_id=message.chat.id,
+        text="""<b>About TeleRoid YouTube Bot!</b>
 
 <b>👨‍💻 Developer:</b> <a href="https://t.me/PredatorHackerzZ_bot">Predator 🇮🇳</a>
 
@@ -91,16 +87,43 @@ async def about(client, message):
 <b>📌 Source : </b> <a href="https://GitHub.com/P-Phreak/TG-YouTube-Uploader"> Click Here </a>
 
 <b>~ @TeleRoidGroup</b>""",
-     reply_markup=InlineKeyboardMarkup(
-                                [[
-                                        InlineKeyboardButton(
-                                            "⭕ Join Our Channel ⭕", url="https://t.me/TeleRoidGroup"),
-                                      
-                                    ]]
-                            ),        
-            disable_web_page_preview=True,        
-            parse_mode="html")
+        reply_markup=InlineKeyboardMarkup(
+            [[
+                InlineKeyboardButton("⭕ Join Our Channel ⭕", url="https://t.me/TeleRoidGroup"),
+            ]]
+        ),        
+        disable_web_page_preview=True,        
+        parse_mode="html"
+    )
 
+
+# Handle video and audio download requests
+@Jebot.on_message(filters.regex(YTDL_REGEX) & filters.private)
+async def download_video(client, message):
+    url = message.text
+    await message.reply_text("⏳ Processing the video, please wait...")
+
+    try:
+        with yt_dlp.YoutubeDL({'format': 'bestvideo+bestaudio/best'}) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            file_path = ydl.prepare_filename(info_dict)
+        
+        # Sending the video
+        caption = f"🎥 {s2tw(info_dict['title'])}\n🔗 [Source]({info_dict['webpage_url']})"
+        await client.send_video(
+            chat_id=message.chat.id,
+            video=file_path,
+            caption=caption,
+            duration=int(info_dict['duration']),
+            parse_mode="html"
+        )
+        os.remove(file_path)
+
+    except Exception as e:
+        await message.reply_text(f"❌ Error: {str(e)}")
+
+
+   
 
 # https://docs.pyrogram.org/start/examples/bot_keyboards
 # Reply with inline keyboard
