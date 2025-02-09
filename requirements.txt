@@ -5,3 +5,4 @@ TgCrypto
 ffmpeg-python
 youtube-dl
 wget
+yt-dlp
