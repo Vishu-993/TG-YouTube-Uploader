@@ -73,6 +73,7 @@ YTDL_REGEX = (r"^((?:https?:)?\/\/)"
               r"(\/)([-a-zA-Z0-9()@:%_\+.~#?&//=]*)([\w\-]+)(\S+)?$")
 s2tw = OpenCC('s2tw.json').convert
 
+
 @Jebot.on_message(filters.command("start"))
 async def start(client, message):
     await message.reply("Welcome! Use /generate to create a Terabox session.")
@@ -81,7 +82,6 @@ async def start(client, message):
 async def generate_session(client, message):
     await message.reply("Generating QR Code... Please wait and get ready with two mobiles.")
 
-    from terabox_session import generate_terabox_session
     qr_path, session_path = generate_terabox_session()
 
     if os.path.exists(qr_path):
