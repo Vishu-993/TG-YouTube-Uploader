@@ -9,6 +9,55 @@ from opencc import OpenCC
 from config import Config
 import wget
 from pyrogram.enums import ParseMode
+import time
+import pickle
+import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+
+CHROMEDRIVER_PATH = "./chromedriver"  # Update if needed
+
+def generate_terabox_session():
+    options = Options()
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920x1080")
+
+    service = Service(CHROMEDRIVER_PATH)
+    driver = webdriver.Chrome(service=service, options=options)
+
+    try:
+        driver.get("https://terabox.com/login")
+        time.sleep(5)  # Wait for page to load
+
+        # Find and download QR code
+        qr_element = driver.find_element(By.XPATH, "//img[contains(@src, 'qrcode')]")
+        qr_url = qr_element.get_attribute("src")
+
+        qr_path = "terabox_qr.png"
+        response = requests.get(qr_url)
+        with open(qr_path, "wb") as file:
+            file.write(response.content)
+
+        print("QR Code saved as", qr_path)
+
+        # Wait for the user to scan
+        time.sleep(20)  # Adjust time if needed
+
+        # Extract session cookies
+        cookies = driver.get_cookies()
+        with open("terabox_session.pkl", "wb") as file:
+            pickle.dump(cookies, file)
+
+        print("Session saved successfully!")
+        return qr_path, "terabox_session.pkl"
+
+    finally:
+        driver.quit()
+
+
 
 Jebot = Client(
    "YT Downloader",
@@ -23,6 +72,29 @@ YTDL_REGEX = (r"^((?:https?:)?\/\/)"
               r"|xhamster\.com|xnxx\.com))"
               r"(\/)([-a-zA-Z0-9()@:%_\+.~#?&//=]*)([\w\-]+)(\S+)?$")
 s2tw = OpenCC('s2tw.json').convert
+
+@Jebot.on_message(filters.command("start"))
+async def start(client, message):
+    await message.reply("Welcome! Use /generate to create a Terabox session.")
+
+@Jebot.on_message(filters.command("generate"))
+async def generate_session(client, message):
+    await message.reply("Generating QR Code... Please wait and get ready with two mobiles.")
+
+    from terabox_session import generate_terabox_session
+    qr_path, session_path = generate_terabox_session()
+
+    if os.path.exists(qr_path):
+        await client.send_photo(message.chat.id, qr_path, caption="Scan this QR Code with your Terabox app.")
+        os.remove(qr_path)
+
+        if os.path.exists(session_path):
+            await message.reply_document(session_path, caption="✅ Login Successful! Here's your session file.")
+            os.remove(session_path)
+        else:
+            await message.reply("⚠️ Login failed. Please try again.")
+    else:
+        await message.reply("❌ Failed to generate QR Code.")
 
 
 
